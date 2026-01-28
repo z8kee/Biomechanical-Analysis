@@ -64,13 +64,16 @@ for vid in os.listdir(video_dir): # for every vid in video directory, add to fra
             print(f"Processing frame {frame_idx} of video {vid}")
         result = pose_landmarker.detect_for_video(mp_img, ts_ms)
 
-        if not result.pose_landmarks:
-            continue
-
-        landmarks = []
-        for landmark in result.pose_landmarks[0]:
-            landmarks.extend([landmark.x, landmark.y, landmark.z, landmark.visibility])
-        frames.append(landmarks)
+        if result.pose_landmarks:
+            landmarks = []
+            for landmark in result.pose_landmarks[0]:
+                landmarks.extend([landmark.x, landmark.y, landmark.z, landmark.visibility])
+            frames.append(landmarks)
+        else:
+            if len(frames) > 0:
+                frames.append(frames[-1])
+            else:
+                frames.append([0.0]*132)
 
     vidcap.release()
     frames = np.array(frames)
