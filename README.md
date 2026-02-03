@@ -11,6 +11,7 @@ PaceyAI is a biomechanical analysis toolkit for sprinting:
 - [scripts/app.py](scripts/app.py): Streamlit web app (upload video → extract features → run model → show results + optional precise feedback).
 - [scripts/featextract.py](scripts/featextract.py): Extracts pose landmarks from videos and windows them into `.npy` samples.
 - [scripts/phaseclassifier.py](scripts/phaseclassifier.py): PyTorch `PhaseClassifier` model and dataset class to turn samples into tensors.
+- [scripts/biomechanics.py](scripts/biomechanics.py): Set of rules to display flags on form imperfections which can be parsed into a GPT api for more detailed feedback.
 - `models/phase_classifier.pth`: Trained PyTorch model weights.
 - `models/pose_landmarker_full.task`: MediaPipe pose landmarker model asset used by `featextract.py`.
 - `data/`: Storage for videos, generated `.npy` windows and `metadata.csv`.
@@ -48,6 +49,7 @@ Open the URL Streamlit prints (usually `http://localhost:8501`) and use the UI t
 - The Streamlit app runs `extract_features_for_app()` from `scripts/featextract.py` to produce a torch tensor of windows for the uploaded video.
 - Videos from `data/video/` are read and processed with Mediapipe, windows the frames, and save `sample{ID}.npy` files into `data/npy/`. It also writes rows to `data/metadata.csv` describing each sample.
 - It loads the PyTorch model from `models/phase_classifier.pth`, runs the model, and converts predicted class indices to labels using the mapping in `scripts/app.py`.
+- Once the phases are classified, the `biomechanics.py` script checks if the landmarks create angles or satisfy conditions upon conditions.
 - The app shows a phase timeline (time ranges per window), a bar chart of phase distribution, and a list of flags that were detected during the run.
 - An additional button labelled 'More Feedback' parses the flags into a chatbot API from `bot.py` and delivers more feedback.
 
