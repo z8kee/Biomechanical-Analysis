@@ -1,5 +1,5 @@
 #Any rules regarding sprinting form will be placed and fetched from here.
-import numpy as np
+import numpy as np, requests
 
 LANDMARKS = {
     "nose": 0,
@@ -60,7 +60,7 @@ def torso_angle(frame, side):
     return angle > 50, angle
 
 def excessive_backside(frames, fps, HIP, ANKLE, LEG_LENGTH):
-    consecutive = 0
+    linger = 0
 
     for f in frames:
         hip = get_point(f, HIP)
@@ -86,7 +86,7 @@ def shin_chest_angle(frame, side):
     )
 
     deg = float(np.degrees(np.arccos(np.clip(cos_angle, -1.0, 1.0))))
-    torso = torso_angle(frame, side)
+    angtorso, torso = torso_angle(frame, side)
 
     return 0.95 * torso <= deg <= 1.05 * torso, deg
 
@@ -117,7 +117,7 @@ def analyse_form(predictions, inputs, fps):
 
             high, torsoang = torso_angle(curr_frame, "left") or torso_angle(curr_frame, "right")
             if high:
-                flags.append(f"Start: Torso rising too early ({torsoang:.1f}°) loses horizontal force.")
+                flags.append(f"Start: Torso rising too early loses horizontal force.")
 
             rknee = get_point(curr_frame, LANDMARKS["right_knee"])
             rheel = get_point(curr_frame, LANDMARKS["right_heel"])
@@ -126,17 +126,10 @@ def analyse_form(predictions, inputs, fps):
             if rknee[1] < rheel[1]: flags.append("Right heel recovery too high causes wasted time.")
             if lknee[1] < lheel[1]: flags.append("Left heel recovery too high causes wasted time.")
 
-            rfoot = get_point(curr_frame, LANDMARKS["right_foot_index"])
-            lfoot = get_point(curr_frame, LANDMARKS["left_foot_index"])
-            lhip = get_point(curr_frame, LANDMARKS["left_hip"])
-            rhip = get_point(curr_frame, LANDMARKS["right_hip"])
-            if distance(rfoot[0], rhip[0]) > 0.15 or distance(lfoot[0], lhip[0]) > 0.15:
-                flags.append("Overstriding detected, reduces efficiency and increases injury risk.")
-
         elif phase_label == 1:
             is_parallel, angle_val = shin_chest_angle(curr_frame, "left") or shin_chest_angle(curr_frame, "right")
             if not is_parallel:
-                flags.append(f"Acceleration: Poor shin-to-chest alignment detected ({angle_val:.1f}°).")
+                flags.append(f"Acceleration: Poor shin-to-chest alignment detected.")
 
             elif angular_velocity(torso_angle(curr_frame, "left")[1], torso_angle(prev_frame, "left")[1], 1/fps) > 10:
                 flags.append("Acceleration: Standing up too fast.")
@@ -148,8 +141,53 @@ def analyse_form(predictions, inputs, fps):
                                                            get_point(curr_frame, LANDMARKS["right_knee"])) < 10:
                 flags.append("Acceleration: Excessive hip flexion detected. Knee lift too high, too early.")
             
-            elif excessive_backside(data[i], fps, LANDMARKS["left_hip"], LANDMARKS["left_ankle"], distance(get_point(curr_frame, LANDMARKS["left_hip"]), get_point(curr_frame, LANDMARKS["left_ankle"]))) or excessive_backside(data[i], fps, LANDMARKS["right_hip"], LANDMARKS["right_ankle"], distance(get_point(curr_frame, LANDMARKS["right_hip"]), get_point(curr_frame, LANDMARKS["right_ankle"]))):
+            elif excessive_backside(data[i], fps, LANDMARKS["left_hip"], LANDMARKS["left_ankle"],
+                                     distance(get_point(curr_frame, LANDMARKS["left_hip"]), 
+                                              get_point(curr_frame, LANDMARKS["left_ankle"]))) or excessive_backside(data[i], fps, LANDMARKS["right_hip"], LANDMARKS["right_ankle"],
+                                                                                                                      distance(get_point(curr_frame, LANDMARKS["right_hip"]), 
+                                                                                                                               get_point(curr_frame, LANDMARKS["right_ankle"]))):
                 flags.append("Backside: Excessive backside mechanics detected.")
 
         elif phase_label == 2:
-            pass
+            rfoot = get_point(curr_frame, LANDMARKS["right_foot_index"])
+            lfoot = get_point(curr_frame, LANDMARKS["left_foot_index"])
+            lhip = get_point(curr_frame, LANDMARKS["left_hip"])
+            rhip = get_point(curr_frame, LANDMARKS["right_hip"])
+            if distance(rfoot[0], lhip[0]) > 0.15 or distance(lfoot[0], rhip[0]) > 0.15:
+                flags.append("Overstriding detected, reduces efficiency and increases injury risk.")
+
+            elif dorsiflexion_angle(curr_frame, "left") or dorsiflexion_angle(curr_frame, "right") > 15.0:
+                flags.append("Poor ankle stiffness")
+
+    return list(set(flags))
+
+def more_detailed_feedback(flags, key):
+    base_url = 'https://api.openai.com/v1/chat/completions'
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {key}"
+    }
+
+    payload = {
+        "model": "gpt-5-nano",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an expert biomechanics coach specializing in sprinting form analysis. Provide detailed feedback and corrective exercises based on biomechanical issues. Try not to use buzzwords and be more simplistic so the average sprinter/runner or even a pro athlete can understand clearly."
+            },
+            {
+                "role": "user",
+                "content": f"The following biomechanical issues were detected during a sprint analysis: {flags}. For each issue, provide an explanation of why it is problematic and suggest specific drills or exercises to correct it. Make it a bit short but not too concise."
+            }
+        ]
+    }
+
+    response = requests.post(base_url, json=payload, headers=headers)
+
+    if response.status_code != 200:
+        raise Exception(f"API request failed due to {response.status_code}: {response.text}")
+    
+    result = response.json()
+
+    return result['choices'][0]['message']['content']
