@@ -62,7 +62,4 @@ Open the URL Streamlit prints (usually `http://localhost:8501`) and use the UI t
 ## Extending / training
 - `scripts/phaseclassifier.py` contains the model class `PhaseClassifier` and a simple `PoseDataset` for loading `.npy` windows with labels from a metadata CSV. If you want to add more data, start from the biggest sample id and run `featextract.py`, label windows with appropriate phases as shown in [phaseclassifier.ipynb cell 2](scripts/phaseclassifier.ipynb).
 
-<video controls>
-<source src=""athlete.mp4"" type="video/mp4">
-Demo
-</video>
+![Demo](athlete.mp4)
