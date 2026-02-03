@@ -178,7 +178,7 @@ def more_detailed_feedback(flags, key):
             },
             {
                 "role": "user",
-                "content": f"The following biomechanical issues were detected during a sprint analysis: {flags}. For each issue, provide an explanation of why it is problematic and suggest specific drills or exercises to correct it. Make it a bit short but not too concise."
+                "content": f"The following biomechanical issues were detected during a sprint analysis: {flags}. For each issue, provide an explanation of why it is problematic and suggest specific drills or exercises to correct it. Make it a slightly short."
             }
         ]
     }
