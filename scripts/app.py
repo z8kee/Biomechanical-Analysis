@@ -1,5 +1,5 @@
-import streamlit as st, tempfile, torch, os, pandas as pd, time
-from featextract import extract_features_for_app
+import streamlit as st, tempfile, torch, os, pandas as pd
+from frameextract import extract_features_for_app
 from phaseclassifier import PhaseClassifier
 from biomechanics import analyse_form, more_detailed_feedback
 
@@ -82,7 +82,7 @@ if upload is not None:
             
             if st.button("More Feedback"):
                 with st.spinner("Asking Coach..."):
-                    data['gpt_feedback'] = more_detailed_feedback(data['flags'], os.getenv("SPRINTKEY"))
+                    data['gpt_feedback'] = more_detailed_feedback(data['flags'], st.secrets["OPENAI_API_KEY"])
                     
             # Show Feedback if it exists
             if data['gpt_feedback']:
