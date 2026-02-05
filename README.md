@@ -19,7 +19,7 @@ PaceyAI is a biomechanical analysis toolkit for sprinting:
 ## Data layout
 - `data/video/`: place source `.mp4 / .mov / .mpeg4` or other supported videos here for feature extraction.
 - `data/npy/`: feature windows saved as `sample{ID}.npy` by `featextract.py`.
-- `data/metadata.csv` — CSV mapping `sample_id` → `video_file` and frame range (used when building datasets).
+- `data/metadata.csv`: CSV mapping `sample_id` → `video_file` and frame range (used when building datasets).
 
 ## Requirements
 This project uses Python and the following packages (approx):
