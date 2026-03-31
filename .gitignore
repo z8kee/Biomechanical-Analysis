@@ -13,15 +13,9 @@ venv/
 .streamlit/
 .streamlit/secrets.toml
 
-# Models
-*.pth
-*.task
-
 # Data
-data/npy/
 data/video/
 *.npy
-*.mp4
 *.mov
 *.avi
 
