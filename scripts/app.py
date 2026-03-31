@@ -29,29 +29,33 @@ if upload is not None:
     if st.button("Analyse Sprint"):
 
         with st.spinner("Extracting features"):
-            input_ten, fps, _ = extract_features_for_app(tfile.name)
-            
-            if input_ten is not None:
-
-                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model = PhaseClassifier().to(device)
-                model.load_state_dict(torch.load(model_path, map_location=device))
-                model.eval()
-                
-                outputs = model(input_ten.to(device))
-                preds = torch.argmax(outputs, dim=1)
-                flags = analyse_form(preds, input_ten, fps)
-                
-
-                st.session_state['data'] = {
-                    'preds': preds,
-                    'fps': fps,
-                    'flags': flags,
-                    'gpt_feedback': None
-                }
-                st.success("Analysis Complete")
+            # Check if model file exists
+            if not os.path.exists(model_path):
+                st.error(f"Model file not found: {model_path}")
             else:
-                st.error("Could not extract data.")
+                input_ten, fps, _ = extract_features_for_app(tfile.name)
+                
+                if input_ten is not None:
+
+                    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                    model = PhaseClassifier().to(device)
+                    model.load_state_dict(torch.load(model_path, map_location=device))
+                    model.eval()
+                    
+                    outputs = model(input_ten.to(device))
+                    preds = torch.argmax(outputs, dim=1)
+                    flags = analyse_form(preds, input_ten, fps)
+                    
+
+                    st.session_state['data'] = {
+                        'preds': preds,
+                        'fps': fps,
+                        'flags': flags,
+                        'gpt_feedback': None
+                    }
+                    st.success("Analysis Complete")
+                else:
+                    st.error("Could not extract data. Check logs for details.")
         
         # cleanup file
         os.unlink(tfile.name)

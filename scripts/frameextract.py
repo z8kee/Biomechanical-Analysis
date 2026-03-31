@@ -33,47 +33,70 @@ def extract_features_for_app(video_path):
     
     try:
         landmarker = vision.PoseLandmarker.create_from_options(options)
-    except:
+    except Exception as e:
+        print(f"Error loading pose landmarker: {e}")
+        print(f"Model path: {m_path}")
+        print(f"Model exists: {os.path.exists(m_path)}")
         return None, 0, 0
-
-    vidcap = cv2.VideoCapture(video_path)
-    fps = vidcap.get(cv2.CAP_PROP_FPS)
-    if fps == 0: fps = 30
     
-    frames_data = []
-    frame_idx = 0
-    
-    while vidcap.isOpened():
-        ret, frame = vidcap.read()
-        if not ret: break
-
-        mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        ts_ms = int((frame_idx / fps) * 1000)
-        result = landmarker.detect_for_video(mp_img, ts_ms)
-
-        if result.pose_landmarks:
-            landmarks = []
-            for landmark in result.pose_landmarks[0]:
-                landmarks.extend([landmark.x, landmark.y, landmark.z, landmark.visibility])
-            frames_data.append(landmarks)
-        else:
-            # zero padding / forward fill if missing
-            if len(frames_data) > 0: 
-                frames_data.append(frames_data[-1])
-            else: 
-                frames_data.append([0.0]*132)
+    try:
+        vidcap = cv2.VideoCapture(video_path)
+        if not vidcap.isOpened():
+            print(f"Error: Could not open video file: {video_path}")
+            return None, 0, 0
+            
+        fps = vidcap.get(cv2.CAP_PROP_FPS)
+        if fps == 0: fps = 30
         
-        frame_idx += 1
+        frames_data = []
+        frame_idx = 0
+        poses_detected = 0
+        
+        while vidcap.isOpened():
+            ret, frame = vidcap.read()
+            if not ret: break
 
-    vidcap.release()
+            mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            ts_ms = int((frame_idx / fps) * 1000)
+            result = landmarker.detect_for_video(mp_img, ts_ms)
+
+            if result.pose_landmarks:
+                poses_detected += 1
+                landmarks = []
+                for landmark in result.pose_landmarks[0]:
+                    landmarks.extend([landmark.x, landmark.y, landmark.z, landmark.visibility])
+                frames_data.append(landmarks)
+            else:
+                # zero padding / forward fill if missing
+                if len(frames_data) > 0: 
+                    frames_data.append(frames_data[-1])
+                else: 
+                    frames_data.append([0.0]*132)
+            
+            frame_idx += 1
+        
+        print(f"Processed {frame_idx} frames, detected poses in {poses_detected} frames")
+
+        vidcap.release()
+    except Exception as e:
+        print(f"Error processing video: {e}")
+        if 'vidcap' in locals():
+            vidcap.release()
+        return None, 0, 0
     
     # window logic
     window_size = 30
     stride = 15
     data_windows = []
+    
+    if not frames_data:
+        print("Error: No frames extracted from video")
+        return None, fps, 0
+    
     frames_arr = np.array(frames_data)
 
     if len(frames_arr) < window_size:
+        print(f"Error: Video too short. Got {len(frames_arr)} frames, need at least {window_size}")
         return None, fps, frame_idx
 
     for i in range(0, len(frames_arr) - window_size + 1, stride):
@@ -81,8 +104,10 @@ def extract_features_for_app(video_path):
         data_windows.append(win)
 
     if len(data_windows) > 0:
+        print(f"Successfully extracted {len(data_windows)} windows from {frame_idx} frames at {fps} fps")
         return torch.tensor(np.array(data_windows), dtype=torch.float32), fps, frame_idx
     else:
+        print("Error: No data windows created")
         return None, fps, frame_idx
 
 def top_n(nums, n=3):
