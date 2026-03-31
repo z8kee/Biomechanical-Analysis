@@ -1,7 +1,7 @@
 import streamlit as st, tempfile, torch, os, pandas as pd
-from scripts.frameextract import extract_features_for_app
-from scripts.phaseclassifier import PhaseClassifier
-from scripts.biomechanics import analyse_form, more_detailed_feedback
+from frameextract import extract_features_for_app
+from phaseclassifier import PhaseClassifier
+from biomechanics import analyse_form, more_detailed_feedback
 
 
 st.set_page_config("Biomechanical Analysis", layout="centered")
