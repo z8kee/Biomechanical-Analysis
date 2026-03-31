@@ -13,28 +13,11 @@ venv/
 .streamlit/
 .streamlit/secrets.toml
 
-# Data
-data/video/
-*.npy
-*.mov
-*.avi
-
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb_checkpoints
-
 # Misc
 .env
-*.log
-dist/
-build/
