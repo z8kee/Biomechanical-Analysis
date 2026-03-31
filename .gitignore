@@ -1,3 +1,46 @@
-.streamlit/secrets.toml
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+*.egg
+.Python
+env/
+venv/
+.venv
+
+# Streamlit
+.streamlit/
+.streamlit/secrets.toml
+
+# Models
+*.pth
+*.task
+
+# Data
+data/npy/
+data/video/
+*.npy
+*.mp4
+*.mov
+*.avi
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Misc
+.env
+*.log
+dist/
+build/
