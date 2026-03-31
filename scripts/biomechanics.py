@@ -174,11 +174,11 @@ def more_detailed_feedback(flags, key):
         "messages": [
             {
                 "role": "system",
-                "content": "You are an expert biomechanics coach specializing in sprinting form analysis. Provide detailed feedback and corrective exercises based on biomechanical issues. Try not to use buzzwords and be more simplistic so the average sprinter/runner or even a pro athlete can understand clearly. Don't provide the suggestions 'if you want' at the end, just the feedback"
+                "content": "You are an expert biomechanics coach specializing in sprinting form analysis. Provide detailed feedback and corrective exercises based on biomechanical issues. Try not to use buzzwords and be more simplistic so the average sprinter/runner or even a pro athlete can understand clearly."
             },
             {
                 "role": "user",
-                "content": f"The following biomechanical issues were detected during a sprint analysis: {flags}. For each issue, provide an explanation of why it is problematic and suggest specific drills or exercises to correct it. Make it slighty short."
+                "content": f"The following biomechanical issues were detected during a sprint analysis: {flags}. For each issue, provide an explanation of why it is problematic and suggest specific drills or exercises to correct it. Make it a slightly short."
             }
         ]
     }

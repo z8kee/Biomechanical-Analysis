@@ -1,5 +1,5 @@
-import streamlit as st, tempfile, torch, os, pandas as pd, time
-from featextract import extract_features_for_app
+import streamlit as st, tempfile, torch, os, pandas as pd
+from frameextract import extract_features_for_app
 from phaseclassifier import PhaseClassifier
 from biomechanics import analyse_form, more_detailed_feedback
 
@@ -17,7 +17,7 @@ PHASE_TO_LABEL = {0: "Start",
              4: "Transition"}
 
 st.title("PaceyAI")
-upload = st.file_uploader("Upload running video", type=['mp4', 'mov'])
+upload = st.file_uploader("Upload running video, preferably side view video.", type=['mp4', 'mov'])
 
 if upload is not None:
     tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
@@ -87,3 +87,4 @@ if upload is not None:
             # Show Feedback if it exists
             if data['gpt_feedback']:
                 st.info(data['gpt_feedback'])
+
