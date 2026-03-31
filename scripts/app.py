@@ -47,7 +47,7 @@ if upload is not None:
                     'preds': preds,
                     'fps': fps,
                     'flags': flags,
-                    'gpt_feedback': None # placeholder
+                    'gpt_feedback': None
                 }
                 st.success("Analysis Complete")
             else:
