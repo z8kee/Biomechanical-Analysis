@@ -9,7 +9,7 @@ st.set_page_config("Biomechanical Analysis", layout="centered")
 if 'data' not in st.session_state:
     st.session_state['data'] = None
 
-model_path = r'C:\Users\supah\OneDrive\Documents\School\Uni Projects\Athletic Analysis\models\phase_classifier.pth'
+model_path = r'models\phase_classifier.pth'
 PHASE_TO_LABEL = {0: "Start",
              1: "Acceleration",
              2: "Max Velocity",
